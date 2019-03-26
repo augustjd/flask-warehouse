@@ -2,16 +2,15 @@ import re
 
 from flask import current_app
 
-from .service import Service, Bucket
-
-from .file import FileService
-from .s3 import S3Service
+from .backends import Service, FileService, S3Service, Bucket
 
 
+# A regex for bucket strings like s3://us-west-1/bucket
 WAREHOUSE_BUCKET_REGEX = \
     re.compile(r"(?P<service>(s3|file)):\/\/(?P<location>[^\/]+)\/(?P<bucket>[^\/]+)")
 
 
+# A regex for cubby strings like s3://us-west-1/bucket/key
 WAREHOUSE_CUBBY_REGEX = \
     re.compile(r"{}\/(?P<key>.+)".format(WAREHOUSE_BUCKET_REGEX.pattern))
 
