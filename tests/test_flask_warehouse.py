@@ -17,7 +17,25 @@ from click.testing import CliRunner
 from flask_warehouse import FlaskWarehouse
 
 
-def test_import():
+@pytest.fixture
+def app():
+    app = Flask(__name__)
+    return app
+
+
+def test_default_service_is_file(app):
     """Sample pytest test function with the pytest fixture as an argument.
     """
-    warehouse = FlaskWarehouse()
+    warehouse = FlaskWarehouse(app)
+
+    assert warehouse.service is not None
+    assert warehouse.service.id == 'file'
+
+    with app.app_context():
+        cubby = warehouse('file:///something/beautiful')
+        assert cubby.delete()
+        assert not cubby.exists()
+        cubby.store(bytes=b'12345')
+        assert cubby.exists()
+        assert cubby.retrieve() == b'12345'
+        assert cubby.delete()

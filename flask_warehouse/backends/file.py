@@ -7,6 +7,8 @@ from .service import Bucket, Cubby, Service
 
 
 class FileService(Service):
+    requires_location = False
+
     def __init__(self, app: Flask, default_location=None):
         super().__init__('file', default_location=default_location)
 

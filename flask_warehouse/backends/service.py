@@ -5,6 +5,8 @@ import os
 class Service:
     __bucket_class__ = None
 
+    requires_location = True
+
     def __init__(self, id, default_location=None):
         self.id = id
         self.default_location = default_location
@@ -13,7 +15,7 @@ class Service:
         return "{}://".format(self.id)
 
     def bucket(self, name, location=None):
-        if location is None and self.default_location is None:
+        if self.requires_location and (location is None and self.default_location is None):
             raise Exception("No location or default location set!")
 
         if self.__bucket_class__ is None:

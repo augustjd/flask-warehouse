@@ -2,12 +2,12 @@ import re
 
 from flask import current_app
 
-from .backends import Service, FileService, S3Service, Bucket
+from .backends import Service, FileService, S3Service
 
 
 # A regex for bucket strings like s3://us-west-1/bucket
 WAREHOUSE_BUCKET_REGEX = \
-    re.compile(r"(?P<service>(s3|file)):\/\/(?P<location>[^\/]+)\/(?P<bucket>[^\/]+)")
+    re.compile(r"(?P<service>(s3|file)):\/\/(?P<location>[^\/]+)?\/(?P<bucket>[^\/]+)")
 
 
 # A regex for cubby strings like s3://us-west-1/bucket/key
@@ -27,7 +27,7 @@ class FlaskWarehouse(Service):
         }
 
         self.service: Service = None
-        self.default_bucket: Bucket = None
+        self.default_bucket = None
 
         if app is not None:
             self.init_app(app)
@@ -35,15 +35,16 @@ class FlaskWarehouse(Service):
     def init_app(self, app):
         self.app = app
 
-        app.config.setdefault('WAREHOUSE_DEFAULT_SERVICE', 's3')
-        app.config.setdefault('WAREHOUSE_DEFAULT_LOCATION', 'us-west-1')
+        app.config.setdefault('WAREHOUSE_DEFAULT_SERVICE', 'file')
 
-        default_service_key = self.app.config['WAREHOUSE_DEFAULT_SERVICE']
+        default_service_key = app.config['WAREHOUSE_DEFAULT_SERVICE']
 
-        self.default_location = self.app.config['WAREHOUSE_DEFAULT_LOCATION']
-
-        self.service = self._create_service(service=default_service_key, location=self.default_location, app=app)
+        self.default_location = app.config.get('WAREHOUSE_DEFAULT_LOCATION')
         self.default_bucket = app.config.get('WAREHOUSE_DEFAULT_BUCKET')
+
+        self.service = self._create_service(service=default_service_key,
+                                            location=self.default_location,
+                                            app=app)
 
     def bucket(self, name=None, location=None):
         if self.app is None:
