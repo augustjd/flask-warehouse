@@ -57,7 +57,7 @@ class Cubby:
     def __str__(self):
         return "{}/{}".format(self.bucket, self.key)
 
-    def retrieve(self, filepath=None, file=None, bytes=None):
+    def retrieve(self, filepath=None, file=None):
         if filepath is not None:
             if os.path.isdir(filepath):
                 filepath = os.path.join(filepath, self.key)
@@ -66,8 +66,6 @@ class Cubby:
                 return self.retrieve_filelike(file)
         elif file is not None:
             return self.retrieve_filelike(file)
-        elif bytes is not None:
-            return self.retrieve_filelike(bytes)
         else:
             buffer = io.BytesIO()
             self.retrieve_filelike(buffer)
