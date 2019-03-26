@@ -77,14 +77,14 @@ class Cubby:
     def retrieve_filelike(self, file):
         raise NotImplementedError()
 
-    def store(self, filepath=None, file=None, string=None, bytes=None):
+    def store(self, filepath=None, file=None, string=None, bytes=None, encoding='utf-8'):
         if filepath is not None:
             with open(filepath, 'rb') as file:
                 return self.store_filelike(file)
         elif file is not None:
             self.store_filelike(file)
         elif string is not None:
-            self.store_filelike(io.BytesIO(string.encode("utf-8")))
+            self.store_filelike(io.BytesIO(string.encode(encoding)))
         elif bytes is not None:
             self.store_filelike(io.BytesIO(bytes))
         else:
