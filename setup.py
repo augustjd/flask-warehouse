@@ -19,7 +19,7 @@ test_requirements = [
 
 setup(
     name='flask_warehouse',
-    version='0.1.0',
+    version='0.1.1',
     description="A clean abstraction over cloud file storage platforms like S3, Alicloud, or Heroku.",
     long_description=readme + '\n\n' + history,
     author="Joshua Augustin",
@@ -27,6 +27,7 @@ setup(
     url='https://github.com/augustjd/flask-warehouse',
     packages=[
         'flask_warehouse',
+        'flask_warehouse.backends',
     ],
     package_dir={'flask_warehouse':
                  'flask_warehouse'},

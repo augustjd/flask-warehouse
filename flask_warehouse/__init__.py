@@ -14,8 +14,8 @@
 
 __author__ = """Joshua Augustin"""
 __email__ = 'augustinspring@gmail.com'
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 
-from .flask_warehouse import FlaskWarehouse
-assert(FlaskWarehouse)
+from .flask_warehouse import Warehouse
+assert(Warehouse)

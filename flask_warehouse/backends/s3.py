@@ -55,7 +55,7 @@ class S3Bucket(Bucket):
 
 
 class S3Cubby(Cubby):
-    def __init__(self, bucket, name, content_type=None, acl='public-read', key=None):
+    def __init__(self, bucket, name, content_type=None, acl=None, key=None):
         super().__init__(bucket, name)
 
         self.content_type = content_type
@@ -68,17 +68,23 @@ class S3Cubby(Cubby):
 
         self.acl = acl
 
-    def store_filelike(self, filelike):
-        copy = SpooledTemporaryFile()  # boto3 now closes the file.
-        copy.write(filelike.read())
-        copy.seek(0)
+    def store_filelike(self, filelike, tempcopy=False):
+        if tempcopy:
+            copy = SpooledTemporaryFile()  # boto3 now closes the file.
+            copy.write(filelike.read())
+            copy.seek(0)
 
-        details = {'ACL': self.acl}
+            filelike = copy
+
+        ExtraArgs = {}
+
+        if self.acl:
+            ExtraArgs['ACL'] = self.acl
 
         if self.content_type:
-            details['ContentType'] = self.content_type
+            ExtraArgs['ContentType'] = self.content_type
 
-        self._key.upload_fileobj(copy, ExtraArgs=details)
+        self._key.upload_fileobj(filelike, ExtraArgs=ExtraArgs)
 
         return self.url()
 
@@ -98,7 +104,7 @@ class S3Cubby(Cubby):
                                                        ExpiresIn=int(expiration.total_seconds()) if expiration else None)
 
         if expiration is None:
-            # chop off ?AWSAccessKeyId= etc.
+            # chop off ?AWSAccessKeyId= etc. - if public, this will work.
             result = result.split('?')[0]
 
         return result

@@ -15,7 +15,7 @@ WAREHOUSE_CUBBY_REGEX = \
     re.compile(r"{}\/(?P<key>.+)".format(WAREHOUSE_BUCKET_REGEX.pattern))
 
 
-class FlaskWarehouse(Service):
+class Warehouse(Service):
     """
     Clean abstraction over several file storage backends (S3, Alicloud, local).
     """
@@ -88,4 +88,4 @@ class FlaskWarehouse(Service):
         return repr(self)
 
 
-__all__ = ["FlaskWarehouse"]
+__all__ = ["Warehouse"]

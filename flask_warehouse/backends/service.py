@@ -115,4 +115,4 @@ class Cubby:
 
     @property
     def service(self):
-        return self.bucket.service()
+        return self.bucket.service
