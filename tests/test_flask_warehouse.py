@@ -84,6 +84,11 @@ def test_s3_service(app):
         assert cubby.mimetype() == None
         cubby.set_mimetype("application/octet-stream")
         assert cubby.mimetype() == 'application/octet-stream'
+
+        assert cubby.metadata() == {}
+        metadata = {"tag": "value"}
+        assert cubby.set_metadata(metadata)
+        assert cubby.metadata() == metadata
         assert cubby.delete()
 
 

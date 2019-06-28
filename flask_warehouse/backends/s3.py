@@ -143,16 +143,17 @@ class S3Cubby(Cubby):
 
         return self._key.content_type
 
-    def _put(self, **kwargs):
-        self._key.put(**kwargs)
-        self._key.reload()
-
     def set_mimetype(self, mimetype):
-        self._put(ContentType=mimetype)
+        self._key.copy_from(CopySource={'Bucket': self.bucket.name, 'Key': self.key},
+                            MetadataDirective="REPLACE",
+                            ContentType=mimetype)
         return self.mimetype()
 
     def set_metadata(self, metadata: dict = {}):
-        self._put(Metadata=metadata)
+        self._key.copy_from(CopySource={'Bucket': self.bucket.name, 'Key': self.key},
+                            MetadataDirective="REPLACE",
+                            Metadata=metadata)
+        self._key.reload()
         return metadata
 
     def __eq__(self, other):
