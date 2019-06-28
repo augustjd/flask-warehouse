@@ -53,6 +53,14 @@ class S3Bucket(Bucket):
 
         return [S3Cubby(self, key.key) for key in keys]
 
+    def __eq__(self, other):
+        if not isinstance(other, S3Bucket):
+            return False
+        
+        return (self.service == other.service 
+        and self.name == other.name 
+        and self.location == other.location)
+
 
 class S3Cubby(Cubby):
     def __init__(self, bucket, name, content_type=None, acl=None, key=None):
@@ -64,7 +72,7 @@ class S3Cubby(Cubby):
             self._key = self.bucket._bucket.Object(name)
         else:
             self._key = key
-            self.key = self._key.name
+            self.key = self._key.nameG
 
         self.acl = acl
 
@@ -147,7 +155,11 @@ class S3Cubby(Cubby):
         self._put(Metadata=metadata)
         return metadata
 
-
+    def __eq__(self, other):
+        if not isinstance(other, S3Cubby):
+            return False
+        
+        return self.bucket == other.bucket and self.key == other.key
 
 
 S3Service.__bucket_class__ = S3Bucket

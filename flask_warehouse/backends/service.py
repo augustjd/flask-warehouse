@@ -24,6 +24,12 @@ class Service:
 
         return self.__bucket_class__(self, name, location or self.default_location)
 
+    def __eq__(self, other):
+        if not isinstance(other, Service):
+            return False
+
+        return self.id == other.id
+
 
 class Bucket:
     def __init__(self, service: Service, name: str, location: str):
