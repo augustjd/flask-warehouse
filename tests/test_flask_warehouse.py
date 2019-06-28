@@ -84,6 +84,11 @@ def test_s3_service(app):
         assert cubby.mimetype() == None
         cubby.set_mimetype("application/octet-stream")
         assert cubby.mimetype() == 'application/octet-stream'
+
+        assert cubby.metadata() == {}
+        metadata = {"tag": "value"}
+        assert cubby.set_metadata(metadata)
+        assert cubby.metadata() == metadata
         assert cubby.delete()
 
 
@@ -100,6 +105,9 @@ def test_s3_service_readme(app):
     app.config['WAREHOUSE_DEFAULT_SERVICE'] = 's3'          # or 'file' for filesystem
     app.config['WAREHOUSE_DEFAULT_LOCATION'] = 'us-west-1'  # required for 's3'
     app.config['WAREHOUSE_DEFAULT_BUCKET'] = None
+
+    app.config['AWS_ACCESS_KEY_ID'] = '...'  # required for 's3'
+    app.config['AWS_SECRET_ACCESS_KEY'] = '...'  # required for 's3'
     
     warehouse = Warehouse(app)
     
