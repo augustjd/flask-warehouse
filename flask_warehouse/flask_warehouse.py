@@ -61,7 +61,7 @@ class Warehouse(Service):
         except KeyError:
             raise Exception("No StorageService was registered named '{}'".format(service))
 
-        return service_constructor(app or current_app, default_location=location)
+        return service_constructor(app or current_app, default_location=location or self.default_location)
 
     def _create_bucket_or_cubby(self, service=None, location=None, bucket=None, key=None, app=None):
         service = self._create_service(service=service, location=location)

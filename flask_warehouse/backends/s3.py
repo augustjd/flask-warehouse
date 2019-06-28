@@ -64,7 +64,7 @@ class S3Cubby(Cubby):
             self._key = self.bucket._bucket.Object(name)
         else:
             self._key = key
-            self.name = self._key.name
+            self.key = self._key.name
 
         self.acl = acl
 
@@ -113,12 +113,41 @@ class S3Cubby(Cubby):
         self._key.delete()
         return not self.exists()
 
-    def filesize(self):
+    def filesize(self, reload=True):
+        if reload:
+            self._key.reload()
+
         return self._key.content_length
 
     def exists(self):
         matches = list(self.bucket._bucket.objects.filter(Prefix=self.key))
         return len(matches) > 0 and matches[0].key == self.key
+
+    def metadata(self, reload=True):
+        if reload:
+            self._key.reload()
+
+        return self._key.metadata
+
+    def mimetype(self, reload=True):
+        if reload:
+            self._key.reload()
+
+        return self._key.content_type
+
+    def _put(self, **kwargs):
+        self._key.put(**kwargs)
+        self._key.reload()
+
+    def set_mimetype(self, mimetype):
+        self._put(ContentType=mimetype)
+        return self.mimetype()
+
+    def set_metadata(self, metadata: dict = {}):
+        self._put(Metadata=metadata)
+        return metadata
+
+
 
 
 S3Service.__bucket_class__ = S3Bucket

@@ -10,6 +10,7 @@ class Service:
     def __init__(self, id, default_location=None):
         self.id = id
         self.default_location = default_location
+        print(f"Service: Set default location {default_location}")
 
     def __str__(self):
         return "{}://".format(self.id)
