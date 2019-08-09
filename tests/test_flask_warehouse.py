@@ -25,6 +25,16 @@ def app():
     return app
 
 
+@pytest.fixture
+def s3_app():
+    app = Flask(__name__)
+
+    app.config['WAREHOUSE_DEFAULT_SERVICE'] = 's3'
+    app.config['WAREHOUSE_DEFAULT_LOCATION'] = 'us-west-1'
+
+    return app
+
+
 def test_default_service_is_file(app):
     """Sample pytest test function with the pytest fixture as an argument.
     """
@@ -172,3 +182,23 @@ def test_copy_move(app):
     example_source.move_to(cubby=example_destination)
     assert example_destination.retrieve()  == contents
     assert not example_source.exists()
+
+
+@mock_s3
+def test_change_acl(s3_app):
+    """Runs the example from the README."""
+    warehouse = Warehouse(s3_app)
+
+    source_bucket = warehouse.bucket('source')
+
+    contents = b"Hello, world!"
+    example_source = source_bucket.cubby('example', acl='public-read').store(bytes=contents)
+    assert example_source.mimetype() is None
+
+    example_source._key.Acl().load()
+    grants = example_source._key.Acl().grants  # grants should be the same before/after
+
+    example_source.set_mimetype("application/json")
+
+    example_source._key.Acl().load()
+    assert example_source._key.Acl().grants == grants  # grants should be the same before/after

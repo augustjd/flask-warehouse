@@ -150,9 +150,14 @@ class S3Cubby(Cubby):
         return self._key.content_type
 
     def set_mimetype(self, mimetype):
+        if not self.acl:
+            raise Exception("S3Cubby's acl must be set or it will be removed by set_mimetype()!")
+
         self._key.copy_from(CopySource={'Bucket': self.bucket.name, 'Key': self.key},
                             MetadataDirective="REPLACE",
+                            ACL=self.acl,
                             ContentType=mimetype)
+
         return self.mimetype()
 
     def set_metadata(self, metadata: dict = {}):
