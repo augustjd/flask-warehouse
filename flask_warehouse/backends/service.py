@@ -106,13 +106,33 @@ class Cubby:
         raise NotImplementedError()
 
     def filesize(self):
-        return NotImplementedError()
+        raise NotImplementedError()
 
     def delete(self):
-        return NotImplementedError()
+        raise NotImplementedError()
 
     def exists(self):
-        return NotImplementedError()
+        raise NotImplementedError()
+
+    def copy_to_native_cubby(self, cubby=None):
+        """Copies from a Cubby of this type to another cubby of this type."""
+        raise NotImplementedError()
+
+    def copy_to(self, key=None, cubby=None):
+        if key:
+            cubby = self.bucket.cubby(key)
+
+        if isinstance(cubby, self.__class__):
+            self.copy_to_native_cubby(cubby)
+            return cubby
+
+        cubby.store_filelike(self.retrieve_filelike())
+        return cubby
+
+    def move_to(self, key=None, cubby=None):
+        copy = self.copy_to(key=key, cubby=cubby)
+        self.delete()
+        return copy
 
     @property
     def extension(self):

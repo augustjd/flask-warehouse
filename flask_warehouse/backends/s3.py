@@ -29,7 +29,7 @@ class S3Bucket(Bucket):
     def __init__(self, service: S3Service, name: str, location: str):
         super().__init__(service, name, location)
 
-        self._bucket = self.service.s3.Bucket(name)
+        self._bucket: boto3.s3.bucket.Bucket = self.service.s3.Bucket(name)
 
         try:
             bucket_configuration = {'LocationConstraint': location}
@@ -61,9 +61,15 @@ class S3Bucket(Bucket):
         and self.name == other.name 
         and self.location == other.location)
 
+    def copy_key(self, dst_key: str, src_key: str, src_bucket_name: str = None):
+        if src_bucket_name is None:
+            src_bucket_name = self.name
+
+        self._bucket.copy({"Bucket":src_bucket_name, "Key": src_key}, dst_key)
+
 
 class S3Cubby(Cubby):
-    def __init__(self, bucket, name, content_type=None, acl=None, key=None):
+    def __init__(self, bucket: S3Bucket, name, content_type=None, acl=None, key=None):
         super().__init__(bucket, name)
 
         self.content_type = content_type
@@ -144,9 +150,14 @@ class S3Cubby(Cubby):
         return self._key.content_type
 
     def set_mimetype(self, mimetype):
+        if not self.acl:
+            raise Exception("S3Cubby's acl must be set or it will be removed by set_mimetype()!")
+
         self._key.copy_from(CopySource={'Bucket': self.bucket.name, 'Key': self.key},
                             MetadataDirective="REPLACE",
+                            ACL=self.acl,
                             ContentType=mimetype)
+
         return self.mimetype()
 
     def set_metadata(self, metadata: dict = {}):
@@ -161,6 +172,9 @@ class S3Cubby(Cubby):
             return False
         
         return self.bucket == other.bucket and self.key == other.key
+
+    def copy_to_native_cubby(self, cubby=None):
+        cubby.bucket.copy_key(cubby.key, self.key, src_bucket_name=self.bucket.name)
 
 
 S3Service.__bucket_class__ = S3Bucket
