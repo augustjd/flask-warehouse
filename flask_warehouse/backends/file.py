@@ -82,5 +82,8 @@ class FileCubby(Cubby):
     def exists(self):
         return os.path.isfile(self.filepath())
 
+    def copy_to_native_cubby(self, cubby=None):
+        shutil.copy(self.filepath(), cubby.filepath())
+
 
 FileService.__bucket_class__ = FolderBucket

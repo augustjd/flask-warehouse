@@ -140,3 +140,35 @@ def test_s3_service_readme(app):
     assert os.path.getsize(filepath) == cubby.filesize()
 
     assert cubby.retrieve() == open(filepath, 'rb').read()
+
+
+@mock_s3
+def test_copy_move(app):
+    """Runs the example from the README."""
+    app.config['WAREHOUSE_DEFAULT_SERVICE'] = 's3'
+    app.config['WAREHOUSE_DEFAULT_LOCATION'] = 'us-west-1'
+
+    warehouse = Warehouse(app)
+    
+    # Object-oriented approach:
+    source_bucket = warehouse.bucket('source')
+    destination_bucket = warehouse.bucket('destination')
+
+    example_source = source_bucket.cubby('example')
+    contents = b"Hello, world!"
+    example_source.store(bytes=contents)
+
+    example_source.copy_to(key="another")
+    another_source = source_bucket.cubby("another")
+
+    assert example_source.retrieve() == another_source.retrieve()
+
+    example_destination = destination_bucket.cubby("destination")
+
+    example_source.copy_to(cubby=example_destination)
+
+    assert example_source.retrieve() == example_destination.retrieve()
+
+    example_source.move_to(cubby=example_destination)
+    assert example_destination.retrieve()  == contents
+    assert not example_source.exists()
