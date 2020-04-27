@@ -1,3 +1,5 @@
+import gzip
+
 from tempfile import SpooledTemporaryFile
 
 from flask import Flask
@@ -82,6 +84,24 @@ class S3Cubby(Cubby):
 
         self.acl = acl
 
+    @staticmethod
+    def apply_func_filelike(filelike, fn):
+        """Applies a function to content in a file like object.
+
+            fn: a function that accepts a single argument of the original content, and returns a single
+                variable as the updated content.
+        """
+        content = filelike.read()
+        content = fn(content)
+
+        # replace the content in the file like object
+        filelike.seek(0)
+        filelike.write(content)
+        filelike.truncate()
+
+        # seek back to the start so the filelike object is usable
+        filelike.seek(0)
+
     def store_filelike(self, filelike, tempcopy=False):
         if tempcopy:
             copy = SpooledTemporaryFile()  # boto3 now closes the file.
@@ -95,8 +115,14 @@ class S3Cubby(Cubby):
         if self.acl:
             ExtraArgs['ACL'] = self.acl
 
-        if self.content_type:
-            ExtraArgs['ContentType'] = self.content_type
+        new_content_type = self.content_type
+        existing_content_type = (self.exists() and self.mimetype()) or None
+        if new_content_type or existing_content_type:
+            ExtraArgs['ContentType'] = new_content_type or existing_content_type
+
+        if self.exists() and self.content_encoding() == "gzip":
+            self.apply_func_filelike(filelike, fn=gzip.compress)
+            ExtraArgs['ContentEncoding'] = self.content_encoding(reload=False)
 
         self._key.upload_fileobj(filelike, ExtraArgs=ExtraArgs)
 
@@ -106,7 +132,12 @@ class S3Cubby(Cubby):
         if filelike.closed:
             raise Exception("File provided was already closed.")
 
-        return self._key.download_fileobj(filelike)
+        self._key.download_fileobj(filelike)
+
+        if self.content_encoding() == "gzip":
+            self.apply_func_filelike(filelike, fn=gzip.decompress)
+
+        return
 
     def url(self, expiration=Cubby.DefaultUrlExpiration):
         service: S3Service = self.bucket.service
