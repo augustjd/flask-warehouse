@@ -151,14 +151,48 @@ class S3Cubby(Cubby):
 
     def set_mimetype(self, mimetype):
         if not self.acl:
-            raise Exception("S3Cubby's acl must be set or it will be removed by set_mimetype()!")
+            raise Exception(
+                "S3Cubby's acl must be set or it will be removed by set_mimetype()!"
+            )
 
-        self._key.copy_from(CopySource={'Bucket': self.bucket.name, 'Key': self.key},
-                            MetadataDirective="REPLACE",
-                            ACL=self.acl,
-                            ContentType=mimetype)
+        args = dict(
+            CopySource={"Bucket": self.bucket.name, "Key": self.key},
+            MetadataDirective="REPLACE",
+            ACL=self.acl,
+            ContentType=mimetype,
+        )
+
+        if self.content_encoding():
+            args["ContentEncoding"] = self.content_encoding(reload=False)
+
+        self._key.copy_from(**args)
 
         return self.mimetype()
+
+    def content_encoding(self, reload=True):
+        if reload:
+            self._key.reload()
+
+        return self._key.content_encoding
+
+    def set_content_encoding(self, content_encoding):
+        if not self.acl:
+            raise Exception(
+                "S3Cubby's acl must be set or it will be removed by set_content_encoding()!"
+            )
+
+        args = dict(
+            CopySource={"Bucket": self.bucket.name, "Key": self.key},
+            MetadataDirective="REPLACE",
+            ACL=self.acl,
+            ContentEncoding=content_encoding,
+        )
+
+        if self.mimetype():
+            args["ContentType"] = self.mimetype(reload=False)
+
+        self._key.copy_from(**args)
+        return self.content_encoding()
 
     def set_metadata(self, metadata: dict = {}):
         self._key.copy_from(CopySource={'Bucket': self.bucket.name, 'Key': self.key},

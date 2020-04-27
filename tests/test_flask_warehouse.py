@@ -101,6 +101,11 @@ def test_s3_service(app):
         assert cubby.metadata() == metadata
         assert cubby.delete()
 
+        # Test content encoding
+        assert cubby.content_encoding() == None
+        cubby.set_content_encoding("gzip")
+        assert cubby.content_encoding() == 'gzip'
+
 
 @mock_s3
 def test_s3_service_readme(app):
