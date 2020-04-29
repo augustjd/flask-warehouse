@@ -6,7 +6,7 @@ MarkupSafe==1.1.1
 PyYAML==5.1
 Pygments==2.3.1
 Sphinx==1.4.8
-Werkzeug==0.15.1
+Werkzeug==0.15.3
 alabaster==0.7.12
 argh==0.26.2
 asn1crypto==0.24.0
