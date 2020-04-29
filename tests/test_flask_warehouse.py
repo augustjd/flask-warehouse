@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import gzip
 from flask import Flask
 
 """
@@ -99,7 +100,53 @@ def test_s3_service(app):
         metadata = {"tag": "value"}
         assert cubby.set_metadata(metadata)
         assert cubby.metadata() == metadata
+
+        assert cubby.content_encoding() is None
+        cubby.set_content_encoding("gzip")
+        assert cubby.content_encoding() == 'gzip'
+
         assert cubby.delete()
+
+@mock_s3
+def test_s3_service_gzipped_content(app):
+    """Tests gzip support for cubby
+    """
+    app.config['WAREHOUSE_DEFAULT_SERVICE'] = 's3'
+    app.config['WAREHOUSE_DEFAULT_LOCATION'] = 'us-west-1'
+
+    warehouse = Warehouse(app)
+
+    assert warehouse.service is not None
+    assert warehouse.service.id == 's3'
+
+    with app.app_context():
+        cubby = warehouse('s3:///something/beautiful')
+        cubby.store(bytes=b'12345')
+        assert cubby.exists()
+
+        # set up attributes for the cubby
+        cubby.set_mimetype("application/octet-stream")
+        cubby.set_content_encoding("gzip")
+
+        # confirm all attributes are set
+        assert cubby.mimetype() == "application/octet-stream"
+        assert cubby.content_encoding() == 'gzip'
+
+        ## Assert gzipped content can be read and written correctly
+        cubby.store(bytes=b'12345')
+
+        # assert gzipped content was written
+        expected_content = gzip.compress(b'12345')
+        actual_content = cubby._key.get()['Body'].read()
+        # convert byte arrays to lists for comparison
+        assert list(expected_content) == list(actual_content)
+
+        # assert no attributes were changed
+        assert cubby.mimetype() == 'application/octet-stream'
+        assert cubby.content_encoding() == 'gzip'
+
+        # assert can read data correctly
+        assert cubby.retrieve() == b'12345'
 
 
 @mock_s3
