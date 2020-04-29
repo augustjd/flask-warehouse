@@ -19,7 +19,7 @@ test_requirements = [
 
 setup(
     name='flask_warehouse',
-    version='0.1.6',
+    version='0.1.7',
     description="A clean abstraction over cloud file storage platforms like S3, Alicloud, or Heroku.",
     long_description=readme + '\n\n' + history,
     author="Joshua Augustin",
