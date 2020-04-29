@@ -134,6 +134,11 @@ class S3Cubby(Cubby):
 
         self._key.download_fileobj(filelike)
 
+        # when ContentEncoding is set, 'download_fileobj' seems to read the filelike
+        # object, so that's why the next line is needed, there's an open issue on moto for that
+        # ref: https://github.com/spulec/moto/issues/2926
+        filelike.seek(0)
+
         if self.content_encoding() == "gzip":
             self.apply_func_filelike(filelike, fn=gzip.decompress)
 
