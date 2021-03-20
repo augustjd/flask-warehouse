@@ -1,7 +1,7 @@
 Babel==2.6.0
 Click==7.0
 Flask==1.0.2
-Jinja2==2.10
+Jinja2==2.11.3
 MarkupSafe==1.1.1
 PyYAML==5.1
 Pygments==2.3.1
