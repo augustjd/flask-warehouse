@@ -3,7 +3,7 @@ Click==7.0
 Flask==1.0.2
 Jinja2==2.10
 MarkupSafe==1.1.1
-PyYAML==5.1
+PyYAML==5.4
 Pygments==2.3.1
 Sphinx==1.4.8
 Werkzeug==0.15.3
